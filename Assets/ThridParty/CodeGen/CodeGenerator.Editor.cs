@@ -52,9 +52,9 @@ namespace ThridParty
         {
             string path = Path.Combine(context.FolderPath, context.FileName);
 
-            if (File.Exists(path))
+            if (System.IO.File.Exists(path))
             {
-                File.Delete(path);
+                System.IO.File.Delete(path);
             }
 
             if (Directory.Exists(context.FolderPath) == false)
@@ -62,7 +62,7 @@ namespace ThridParty
                 Directory.CreateDirectory(context.FolderPath);
             }
 
-            File.WriteAllText(path, context.Code, Encoding.UTF8);
+            System.IO.File.WriteAllText(path, context.Code, Encoding.UTF8);
         }
 
         [MenuItem(MENU_TOGGLE_AUTO_GENERATE)]

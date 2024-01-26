@@ -1,4 +1,3 @@
-using Internal;
 using Zenject;
 
 public class SceneInstaller<TInitializer> : MonoInstaller

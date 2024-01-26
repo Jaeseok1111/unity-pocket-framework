@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace Internal
+namespace ThridParty
 {
     public class File : IDisposable
     {

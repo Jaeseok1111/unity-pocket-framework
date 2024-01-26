@@ -1,4 +1,4 @@
-using Internal;
+using ThridParty;
 using UnityEngine;
 using Zenject;
 

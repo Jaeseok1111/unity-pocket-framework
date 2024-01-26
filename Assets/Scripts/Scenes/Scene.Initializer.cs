@@ -1,4 +1,4 @@
-using Internal;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -6,7 +6,7 @@ public class SceneInitializer : IInitializable
 {
     protected DiContainer _container;
 
-    private EventListener _listener = new();
+    private Dictionary<string, System.Action> _eventCallback = new();
     private SceneManager _sceneManager;
 
     public SceneInitializer([Inject] DiContainer container)
@@ -25,9 +25,14 @@ public class SceneInitializer : IInitializable
             .AsSingle();
     }
 
-    public void Listen(string name, global::System.Action listener)
+    public void Listen(string name, System.Action listener)
     {
-        _listener.Listen(name, listener);
+        if (_eventCallback.ContainsKey(name))
+        {
+            return;
+        }
+
+        _eventCallback[name] = listener;
     }
 
     public void LoadScene(string sceneName, params SceneJob[] jobs)
@@ -37,6 +42,11 @@ public class SceneInitializer : IInitializable
 
     public void SendEvent(SendEventSignal signal)
     {
-        _listener.Invoke(signal.Name);
+        if (_eventCallback.ContainsKey(signal.Name) == false)
+        {
+            return;
+        }
+
+        _eventCallback[signal.Name].Invoke();
     }
 }
