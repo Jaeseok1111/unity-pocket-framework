@@ -2,38 +2,35 @@ using BackEnd;
 using UnityEngine;
 using Zenject;
 
-namespace UnityFramework
+public class BackendInstaller : MonoInstaller
 {
-    public class BackendInstaller : MonoInstaller
+    public override void InstallBindings()
     {
-        public override void InstallBindings()
+        SignalBusInstaller.Install(Container);
+
+        if (Initialize() == false)
         {
-            SignalBusInstaller.Install(Container);
-
-            if (Initialize() == false)
-            {
-                Debug.LogError("Error: Initialize()");
-            }
-
-            Debug.Log("Start Server...");
+            Debug.LogError("Error: Initialize()");
         }
 
-        private bool Initialize()
+        Debug.Log("Start Server...");
+    }
+
+    private bool Initialize()
+    {
+        Debug.Log("Try: Initialize()");
+
+        var backend = Backend.Initialize(useAsyncPoll: true);
+
+        if (backend.IsSuccess())
         {
-            Debug.Log("Try: Initialize()");
-
-            var backend = Backend.Initialize(useAsyncPoll: true);
-
-            if (backend.IsSuccess())
-            {
-                Debug.Log("Success: Initialize()");
-                return true;
-            }
-            else
-            {
-                Debug.Log($"Failed: Initialize(). {backend}");
-                return false;
-            }
+            Debug.Log("Success: Initialize()");
+            return true;
+        }
+        else
+        {
+            Debug.Log($"Failed: Initialize(). {backend}");
+            return false;
         }
     }
 }

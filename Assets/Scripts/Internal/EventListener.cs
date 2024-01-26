@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityFramework.Internal
+namespace Internal
 {
     public struct SendEventSignal
     {

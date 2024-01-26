@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace UnityFramework.Internal
+namespace Internal
 {
     public class File : IDisposable
     {

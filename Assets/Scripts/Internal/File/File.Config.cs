@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace UnityFramework.Internal
+namespace Internal
 {
     public class ConfigFile : File
     {

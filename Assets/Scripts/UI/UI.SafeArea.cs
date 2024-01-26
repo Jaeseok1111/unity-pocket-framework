@@ -1,63 +1,60 @@
 using UnityEngine;
 
-namespace UnityFramework.UI
+public class UISafeArea : MonoBehaviour
 {
-    public class UISafeArea : MonoBehaviour
+    private RectTransform _panel;
+
+    private Rect _lastSafeArea;
+    private Vector2Int _lastScreenSize;
+    private ScreenOrientation _lastScreenOrientation = ScreenOrientation.LandscapeLeft;
+
+    private void Awake()
     {
-        private RectTransform _panel;
+        _panel = GetComponent<RectTransform>();
 
-        private Rect _lastSafeArea;
-        private Vector2Int _lastScreenSize;
-        private ScreenOrientation _lastScreenOrientation = ScreenOrientation.LandscapeLeft;
+        Refresh();
+    }
 
-        private void Awake()
+    private void LateUpdate()
+    {
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        Rect safeArea = Screen.safeArea;
+
+        if (safeArea != _lastSafeArea
+            || Screen.width != _lastScreenSize.x
+            || Screen.height != _lastScreenSize.y
+            || Screen.orientation != _lastScreenOrientation)
         {
-            _panel = GetComponent<RectTransform>();
+            _lastScreenSize.x = Screen.width;
+            _lastScreenSize.y = Screen.height;
+            _lastScreenOrientation = Screen.orientation;
 
-            Refresh();
+            Apply(safeArea);
         }
+    }
 
-        private void LateUpdate()
+    private void Apply(Rect safeArea)
+    {
+        _lastSafeArea = safeArea;
+
+        if (Screen.width > 0 && Screen.height > 0)
         {
-            Refresh();
-        }
+            Vector2 anchorMin = safeArea.position;
+            Vector2 anchorMax = safeArea.position + safeArea.size;
 
-        private void Refresh()
-        {
-            Rect safeArea = Screen.safeArea;
+            anchorMin.x /= Screen.width;
+            anchorMin.y /= Screen.height;
+            anchorMax.x /= Screen.width;
+            anchorMax.y /= Screen.height;
 
-            if (safeArea != _lastSafeArea
-                || Screen.width != _lastScreenSize.x
-                || Screen.height != _lastScreenSize.y
-                || Screen.orientation != _lastScreenOrientation)
+            if (anchorMin.x >= 0 && anchorMin.y >= 0 && anchorMax.x >= 0 && anchorMax.y >= 0)
             {
-                _lastScreenSize.x = Screen.width;
-                _lastScreenSize.y = Screen.height;
-                _lastScreenOrientation = Screen.orientation;
-
-                Apply(safeArea);
-            }
-        }
-
-        private void Apply(Rect safeArea)
-        {
-            _lastSafeArea = safeArea;
-
-            if (Screen.width > 0 && Screen.height > 0)
-            {
-                Vector2 anchorMin = safeArea.position;
-                Vector2 anchorMax = safeArea.position + safeArea.size;
-
-                anchorMin.x /= Screen.width;
-                anchorMin.y /= Screen.height;
-                anchorMax.x /= Screen.width;
-                anchorMax.y /= Screen.height;
-
-                if (anchorMin.x >= 0 && anchorMin.y >= 0 && anchorMax.x >= 0 && anchorMax.y >= 0)
-                {
-                    _panel.anchorMin = anchorMin;
-                    _panel.anchorMax = anchorMax;
-                }
+                _panel.anchorMin = anchorMin;
+                _panel.anchorMax = anchorMax;
             }
         }
     }

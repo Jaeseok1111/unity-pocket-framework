@@ -1,39 +1,36 @@
 using UnityEngine;
 using Zenject;
 
-namespace UnityFramework.UI
+public class UIInstaller : MonoInstaller
 {
-    public class UIInstaller : MonoInstaller
+    [Header("Canvas")]
+    [SerializeField] private Canvas _main;
+    [SerializeField] private Canvas _popup;
+
+    [Header("Panel")]
+    [SerializeField] private GameObject _root;
+
+    public override void InstallBindings()
     {
-        [Header("Canvas")]
-        [SerializeField] private Canvas _main;
-        [SerializeField] private Canvas _popup;
+        Container
+            .Bind<Canvas>()
+            .WithId("Main")
+            .FromInstance(_main)
+            .AsCached();
 
-        [Header("Panel")]
-        [SerializeField] private GameObject _root;
+        Container
+            .Bind<Canvas>()
+            .WithId("Popup")
+            .FromInstance(_popup)
+            .AsCached();
 
-        public override void InstallBindings()
-        {
-            Container
-                .Bind<Canvas>()
-                .WithId("Main")
-                .FromInstance(_main)
-                .AsCached();
+        Container
+            .Bind<UILogger>()
+            .AsSingle();
 
-            Container
-                .Bind<Canvas>()
-                .WithId("Popup")
-                .FromInstance(_popup)
-                .AsCached();
-
-            Container
-                .Bind<UILogger>()
-                .AsSingle();
-
-            Container
-                .BindInterfacesAndSelfTo<UIPanel>()
-                .AsSingle()
-                .WithArguments(_root);
-        }
+        Container
+            .BindInterfacesAndSelfTo<UIPanel>()
+            .AsSingle()
+            .WithArguments(_root);
     }
 }

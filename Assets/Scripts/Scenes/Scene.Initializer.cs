@@ -1,45 +1,42 @@
+using Internal;
 using UnityEngine;
-using UnityFramework.Internal;
 using Zenject;
 
-namespace UnityFramework.Scenes
+public class SceneInitializer : IInitializable
 {
-    public class SceneInitializer : IInitializable
+    protected DiContainer _container;
+
+    private EventListener _listener = new();
+    private SceneManager _sceneManager;
+
+    public SceneInitializer([Inject] DiContainer container)
     {
-        protected DiContainer _container;
+        _container = container;
+    }
 
-        private EventListener _listener = new();
-        private SceneManager _sceneManager;
+    public virtual void Initialize()
+    {
+        GameObject root = _container.Resolve<Context>().gameObject;
 
-        public SceneInitializer([Inject] DiContainer container)
-        {
-            _container = container;
-        }
+        _sceneManager = _container.InstantiateComponent<SceneManager>(root);
+        _container
+            .BindInterfacesAndSelfTo<SceneManager>()
+            .FromInstance(_sceneManager)
+            .AsSingle();
+    }
 
-        public virtual void Initialize()
-        {
-            GameObject root = _container.Resolve<Context>().gameObject;
+    public void Listen(string name, global::System.Action listener)
+    {
+        _listener.Listen(name, listener);
+    }
 
-            _sceneManager = _container.InstantiateComponent<SceneManager>(root);
-            _container
-                .BindInterfacesAndSelfTo<SceneManager>()
-                .FromInstance(_sceneManager)
-                .AsSingle();
-        }
+    public void LoadScene(string sceneName, params SceneJob[] jobs)
+    {
+        _sceneManager.LoadSceneAsync(sceneName, jobs);
+    }
 
-        public void Listen(string name, global::System.Action listener)
-        {
-            _listener.Listen(name, listener);
-        }
-
-        public void LoadScene(string sceneName, params SceneJob[] jobs)
-        {
-            _sceneManager.LoadSceneAsync(sceneName, jobs);
-        }
-
-        public void SendEvent(SendEventSignal signal)
-        {
-            _listener.Invoke(signal.Name);
-        }
+    public void SendEvent(SendEventSignal signal)
+    {
+        _listener.Invoke(signal.Name);
     }
 }

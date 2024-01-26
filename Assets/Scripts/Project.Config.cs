@@ -1,83 +1,80 @@
+using Internal;
 using UnityEngine;
-using UnityFramework.Internal;
 using Zenject;
 
-namespace UnityFramework
+public class ProjectConfig : ILateDisposable
 {
-    public class ProjectConfig : ILateDisposable
+    private ConfigFile _file = new();
+
+    private StringValue _language = new StringValue() { Identifier = "Language" };
+    private StringValue _user = new StringValue() { Identifier = "UserId" };
+
+    [Inject]
+    public ProjectConfig(DiContainer container, string fileName, bool autoFlush)
     {
-        private ConfigFile _file = new();
+        container
+            .Bind<StringValue>()
+            .WithId(_language.Identifier)
+            .FromInstance(_language)
+            .AsCached();
 
-        private StringValue _language = new StringValue() { Identifier = "Language" };
-        private StringValue _user = new StringValue() { Identifier = "UserId" };
+        container
+            .Bind<StringValue>()
+            .WithId(_user.Identifier)
+            .FromInstance(_user)
+            .AsCached();
 
-        [Inject]
-        public ProjectConfig(DiContainer container, string fileName, bool autoFlush)
+        _file.Open(fileName, autoFlush);
         {
-            container
-                .Bind<StringValue>()
-                .WithId(_language.Identifier)
-                .FromInstance(_language)
-                .AsCached();
+            _language.Value = _file.GetValue("Language", "Identifier");
+            _user.Value = _file.GetValue("User", "Identifier");
 
-            container
-                .Bind<StringValue>()
-                .WithId(_user.Identifier)
-                .FromInstance(_user)
-                .AsCached();
-
-            _file.Open(fileName, autoFlush);
+            if (_language.Value != null)
             {
-                _language.Value = _file.GetValue("Language", "Identifier");
-                _user.Value = _file.GetValue("User", "Identifier");
-
-                if (_language.Value != null)
+                Localization.SetLanguage(_language.Value);
+            }
+            else
+            {
+                switch (Application.systemLanguage)
                 {
-                    Localization.SetLanguage(_language.Value);
-                }
-                else
-                {
-                    switch (Application.systemLanguage)
-                    {
-                        case SystemLanguage.English:
-                            Language = "en";
-                            break;
-                        case SystemLanguage.Japanese:
-                            Language = "ja";
-                            break;
-                        case SystemLanguage.Korean:
-                            Language = "ko";
-                            break;
-                    }
+                    case SystemLanguage.English:
+                        Language = "en";
+                        break;
+                    case SystemLanguage.Japanese:
+                        Language = "ja";
+                        break;
+                    case SystemLanguage.Korean:
+                        Language = "ko";
+                        break;
                 }
             }
         }
+    }
 
-        public string Language
+    public string Language
+    {
+        get => _language.Value;
+        set
         {
-            get => _language.Value;
-            set
-            {
-                Localization.SetLanguage(value);
+            Localization.SetLanguage(value);
 
-                _language.Value = value;
-                _file.SetValue("Language", "Identifier", _language.Value);
-            }
+            _language.Value = value;
+            _file.SetValue("Language", "Identifier", _language.Value);
         }
+    }
 
-        public string User
+    public string User
+    {
+        get => _user.Value;
+        set
         {
-            get => _user.Value;
-            set
-            {
-                _user.Value = value;
-                _file.SetValue("User", "Identifier", _user.Value);
-            }
+            _user.Value = value;
+            _file.SetValue("User", "Identifier", _user.Value);
         }
+    }
 
-        public void LateDispose()
-        {
-            _file.Dispose();
-        }
+    public void LateDispose()
+    {
+        _file.Dispose();
     }
 }
