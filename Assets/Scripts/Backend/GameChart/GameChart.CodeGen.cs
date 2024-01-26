@@ -1,10 +1,11 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using UnityCodeGen;
+#if UNITY_EDITOR
 
-[Generator]
-public class GameChartCodeGen : CodeGeneratorBase
+using System;
+using System.Reflection;
+using ThridParty;
+using UnityEditor;
+
+public class GameChartCodeGen : CodeGenerator
 {
     public override string FolderPath => "Assets/Scripts/Backend/GameChart";
     public override string Name => "GameChart.Generated.cs";
@@ -19,13 +20,7 @@ public class GameChartCodeGen : CodeGeneratorBase
 
     private void GenerateClasses()
     {
-        Type[] classes = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => typeof(IGameChart).IsAssignableFrom(p))
-            .ToArray();
-
-        foreach (Type gameChart in classes)
+        foreach (Type gameChart in TypeCache.GetTypesWithAttribute<GameChartAttribute>())
         {
             GameChartAttribute attribute = gameChart.GetCustomAttribute<GameChartAttribute>();
             if (attribute == null)
@@ -108,3 +103,6 @@ public class GameChartCodeGen : CodeGeneratorBase
         WriteLine("}");
     }
 }
+
+
+#endif

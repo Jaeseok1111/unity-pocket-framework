@@ -1,10 +1,11 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using UnityCodeGen;
+#if UNITY_EDITOR
 
-[Generator]
-public class GameDataCodeGen : CodeGeneratorBase
+using System;
+using System.Reflection;
+using ThridParty;
+using UnityEditor;
+
+public class GameDataCodeGen : CodeGenerator
 {
     public override string FolderPath => "Assets/Scripts/Backend/GameData";
     public override string Name => "GameData.Generated.cs";
@@ -22,13 +23,7 @@ public class GameDataCodeGen : CodeGeneratorBase
 
     private void GenerateClasses()
     {
-        Type[] classes = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => typeof(IGameData).IsAssignableFrom(p))
-            .ToArray();
-
-        foreach (Type gameData in classes)
+        foreach (Type gameData in TypeCache.GetTypesWithAttribute<GameDataAttribute>())
         {
             GameDataAttribute attribute = gameData.GetCustomAttribute<GameDataAttribute>();
             if (attribute == null)
@@ -120,7 +115,7 @@ public class GameDataCodeGen : CodeGeneratorBase
                     continue;
                 }
 
-                
+
                 if (field.FieldType == typeof(string))
                 {
                     WriteLine($"{field.Name} = gameDataJson[\"{column.Name}\"].ToString();");
@@ -148,3 +143,6 @@ public class GameDataCodeGen : CodeGeneratorBase
         WriteLine("}");
     }
 }
+
+
+#endif
