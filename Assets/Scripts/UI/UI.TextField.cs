@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityFramework;
 using Zenject;
 
 [RequireComponent(typeof(TextMeshProUGUI))]

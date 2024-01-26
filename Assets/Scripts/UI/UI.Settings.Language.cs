@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityFramework;
 using Zenject;
 
 public class UISettingsLanguage : UIPagination
