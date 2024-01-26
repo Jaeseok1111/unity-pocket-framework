@@ -4,34 +4,34 @@ using Zenject;
 
 namespace UnityFramework
 {
-    public class ServerInstaller : MonoInstaller
+    public class BackendInstaller : MonoInstaller
     {
         public override void InstallBindings()
         {
             SignalBusInstaller.Install(Container);
 
-            if (InitializeServer() == false)
+            if (Initialize() == false)
             {
-                Debug.LogError("Error: InitializeServer()");
+                Debug.LogError("Error: Initialize()");
             }
 
             Debug.Log("Start Server...");
         }
 
-        private bool InitializeServer()
+        private bool Initialize()
         {
-            Debug.Log("Try: InitializeServer()");
+            Debug.Log("Try: Initialize()");
 
             var backend = Backend.Initialize(useAsyncPoll: true);
 
             if (backend.IsSuccess())
             {
-                Debug.Log("Success: InitializeServer()");
+                Debug.Log("Success: Initialize()");
                 return true;
             }
             else
             {
-                Debug.Log($"Failed: InitializeServer(). {backend}");
+                Debug.Log($"Failed: Initialize(). {backend}");
                 return false;
             }
         }

@@ -10,12 +10,12 @@ namespace UnityFramework.UI
         [SerializeField] private List<string> _languages = new();
 
         private StringValue _language;
-        private GameConfig _config;
+        private ProjectConfig _config;
 
         [Inject]
         public void Construct(
             [Inject(Id = "Language")] StringValue language,
-            [Inject] GameConfig config)
+            [Inject] ProjectConfig config)
         {
             _language = language;
             _config = config;

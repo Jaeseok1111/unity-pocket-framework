@@ -4,7 +4,7 @@ using Zenject;
 
 namespace UnityFramework
 {
-    public class GameConfig : ILateDisposable
+    public class ProjectConfig : ILateDisposable
     {
         private ConfigFile _file = new();
 
@@ -12,7 +12,7 @@ namespace UnityFramework
         private StringValue _user = new StringValue() { Identifier = "UserId" };
 
         [Inject]
-        public GameConfig(DiContainer container, string fileName, bool autoFlush)
+        public ProjectConfig(DiContainer container, string fileName, bool autoFlush)
         {
             container
                 .Bind<StringValue>()
