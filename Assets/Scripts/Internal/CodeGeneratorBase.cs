@@ -32,6 +32,12 @@ public abstract class CodeGeneratorBase : ICodeGenerator
             PushTemporaryString();
         }
 
+        string filePath = Path.Combine(FolderPath, Name);
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+
         string header =
             $"/// This file is auto-generated file with project,{Environment.NewLine}" +
             $"/// with {GetType().FullName} class.{Environment.NewLine}" +

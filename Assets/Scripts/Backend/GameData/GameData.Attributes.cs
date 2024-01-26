@@ -4,7 +4,7 @@ using System;
     [GameData(Name = "UserData")]
     public partial class UserData : IGameData
     {
-        [GameDataColumn(Name = "name", Type = typeof(string))]
+        [GameDataColumn(Name = "name")]
         public string Name;
     }
 */

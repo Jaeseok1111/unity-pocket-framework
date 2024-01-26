@@ -3,20 +3,8 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-public struct GameDataQueryResult
-{
-    public bool IsSuccess; 
-    public string ClassName;
-    public string FunctionName;
-    public string TableName;
-    public string ErrorInfo;
-}
-
 public class GameDataQuery
 {
-    public delegate void AfterLoadDelegate(GameDataQueryResult result);
-    public delegate void AfterCallback(GameDataQueryResult result);
-
     private IGameDataForAutoGeneration _gameData;
     private string _inDate;
 
@@ -25,9 +13,9 @@ public class GameDataQuery
         _gameData = gameData;
     }
 
-    public void LoadByMyData(AfterLoadDelegate afterLoad)
+    public void LoadByMyData(AfterBackendLoadDelegate afterLoad)
     {
-        GameDataQueryResult result = new();
+        BackendQueryResult result = new();
         result.IsSuccess = true;
         result.ClassName = GetType().Name;
         result.FunctionName = MethodBase.GetCurrentMethod()?.Name;
@@ -63,9 +51,9 @@ public class GameDataQuery
         });
     }
 
-    public void LoadByTransaction(LitJson.JsonData gameDataJson, AfterLoadDelegate afterLoad)
+    public void LoadByTransaction(LitJson.JsonData gameDataJson, AfterBackendLoadDelegate afterLoad)
     {
-        GameDataQueryResult result = new();
+        BackendQueryResult result = new();
         result.IsSuccess = true;
         result.ClassName = GetType().Name;
         result.FunctionName = MethodBase.GetCurrentMethod()?.Name;
@@ -88,9 +76,9 @@ public class GameDataQuery
         }
     }
 
-    public void Update(AfterCallback afterCallback)
+    public void Update(AfterBackendCallback afterCallback)
     {
-        GameDataQueryResult result = new();
+        BackendQueryResult result = new();
         result.ClassName = GetType().Name;
         result.FunctionName = MethodBase.GetCurrentMethod()?.Name;
         result.TableName = _gameData.GetName();
