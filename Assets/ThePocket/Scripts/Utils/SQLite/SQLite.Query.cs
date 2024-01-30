@@ -21,80 +21,50 @@ namespace ThePocket.Utils.SQLite
             _tableName = tableName;
         }
 
-        private Query(
-            DatabaseContext context, string tableName,
-            IEnumerable<string> whereClauseList, IEnumerable<string> orderClauseList, 
-            int limit, int page)
+        private Query<T> CopyWith(
+            DatabaseContext context = null, string tableName = null,
+            IEnumerable<string> whereClauseList = null, IEnumerable<string> orderClauseList = null,
+            int? limit = null, int? page = null)
         {
-            _context = context;
-            _tableName = tableName;
+            Query<T> newQuery = new(context ?? _context, tableName ?? _tableName);
 
-            _whereClauseList = whereClauseList;
-            _orderClauseList = orderClauseList;
+            newQuery._whereClauseList = whereClauseList ?? _whereClauseList;
+            newQuery._orderClauseList = orderClauseList ?? _orderClauseList;
+            newQuery._limit = limit ?? _limit;
+            newQuery._page = page ?? _page;
 
-            _limit = limit;
-            _page = page;
+            return newQuery;
         }
 
         public Query<T> Where(FieldScheme field, object value)
         {
             string newCondition = $"({field.Name} = {value})";
 
-            return new Query<T>(
-                context: _context,
-                tableName: _tableName,
-                whereClauseList: UnionClause(_whereClauseList, newCondition), 
-                orderClauseList: _orderClauseList,
-                limit: _limit,
-                page: _page);
-        }
-
-        public Query<T> Limit(int limit)
-        {
-            return new Query<T>(
-                context: _context,
-                tableName: _tableName,
-                whereClauseList: _whereClauseList,
-                orderClauseList: _orderClauseList,
-                limit: limit,
-                page: _page);
-        }
-
-        public Query<T> SetPage(int page)
-        {
-            return new Query<T>(
-                context: _context,
-                tableName: _tableName,
-                whereClauseList: _whereClauseList,
-                orderClauseList: _orderClauseList,
-                limit: _limit,
-                page: page);
+            return CopyWith(whereClauseList: UnionClause(_whereClauseList, newCondition));
         }
 
         public Query<T> OrderByAsc(string key)
         {
             string newCondition = $"{key} asc";
 
-            return new Query<T>(
-                context: _context,
-                tableName: _tableName,
-                whereClauseList: _whereClauseList,
-                orderClauseList: UnionClause(_orderClauseList, newCondition),
-                limit: _limit,
-                page: _page);
+            return CopyWith(orderClauseList: UnionClause(_orderClauseList, newCondition));
         }
 
         public Query<T> OrderByDesc(string key)
         {
             string newCondition = $"{key} desc";
 
-            return new Query<T>(
-                context: _context,
-                tableName: _tableName,
-                whereClauseList: _whereClauseList,
-                orderClauseList: UnionClause(_orderClauseList, newCondition),
-                limit: _limit,
-                page: _page);
+            return CopyWith(orderClauseList: UnionClause(_orderClauseList, newCondition));
+        }
+
+        public Query<T> Limit(int limit)
+        {
+            return CopyWith(limit: limit);
+        }
+
+        public Query<T> SetPage(int page)
+        {
+            return CopyWith(page: page);
         }
 
         private IEnumerable<string> UnionClause(IEnumerable<string> clauseList, string newConnection)
@@ -119,7 +89,7 @@ namespace ThePocket.Utils.SQLite
                 return null;
             }
 
-            StringBuilder query = new StringBuilder();
+            StringBuilder query = new();
 
             query.Append($"select * from {_tableName}");
 
@@ -153,7 +123,7 @@ namespace ThePocket.Utils.SQLite
                 return;
             }
 
-            StringBuilder query = new StringBuilder();
+            StringBuilder query = new();
 
             query.Append($"update {_tableName} set ");
             query.Append(string.Join(",", fields.Select(field => $"{field.Key.Name} = {field.Value}")));
@@ -178,7 +148,7 @@ namespace ThePocket.Utils.SQLite
                 return;
             }
 
-            StringBuilder query = new StringBuilder();
+            StringBuilder query = new();
 
             query.Append($"delete from {_tableName}");
 

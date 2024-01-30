@@ -72,5 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 *.Generated.cs
+*.Generated.cs.meta
 *.sqlite
 *.db
