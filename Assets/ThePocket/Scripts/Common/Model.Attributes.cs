@@ -1,7 +1,22 @@
 using System;
 
-namespace ThePocket.Utils.SQLite
+namespace ThePocket
 {
+    [Flags]
+    public enum ModelUsageTargets
+    {
+        GameChart,
+        GameData,
+        Database,
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class ModelAttribute : Attribute
+    {
+        public string Name { get; set; }
+        public ModelUsageTargets Usage { get; set; }
+    }
+
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     public class FieldAttribute : Attribute
     {

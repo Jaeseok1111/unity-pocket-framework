@@ -29,7 +29,7 @@ namespace ThePocket.Utils.SQLite
         private void GenerateClasses()
         {
             var query = TypeCache
-                .GetTypesWithAttribute<TableAttribute>()
+                .GetTypesWithAttribute<ModelAttribute>()
                 .GroupBy(chart => chart.Namespace);
 
             foreach (IGrouping<string, Type> group in query)
@@ -39,8 +39,13 @@ namespace ThePocket.Utils.SQLite
 
                 foreach (Type table in group)
                 {
-                    TableAttribute attribute = table.GetCustomAttribute<TableAttribute>();
+                    ModelAttribute attribute = table.GetCustomAttribute<ModelAttribute>();
                     if (attribute == null)
+                    {
+                        continue;
+                    }
+
+                    if (attribute.Usage.HasFlag(ModelUsageTargets.Database) == false)
                     {
                         continue;
                     }
@@ -75,7 +80,7 @@ namespace ThePocket.Utils.SQLite
             WriteLine("}");
         }
 
-        private void GenerateClass(Type table, TableAttribute attribute)
+        private void GenerateClass(Type table, ModelAttribute attribute)
         {
             WriteLine($"public partial class {table.Name} : IRecord");
             WriteLine("{");
@@ -139,7 +144,7 @@ namespace ThePocket.Utils.SQLite
             WriteLine("}");
         }
 
-        private void GenerateDefinitionClass(Type table, TableAttribute tableAttribute)
+        private void GenerateDefinitionClass(Type table, ModelAttribute tableAttribute)
         {
             WriteLine($"public class Scheme : TableScheme");
             WriteLine("{");

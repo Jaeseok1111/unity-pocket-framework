@@ -7,6 +7,6 @@ namespace ThePocket
     public interface IGameChartForAutoGeneration
     {
         public string GetName();
-        public void ToLocal(LitJson.JsonData gameChartJson);
+        public void SaveToLocal(LitJson.JsonData gameChartJson);
     }
 }

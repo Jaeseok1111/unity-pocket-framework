@@ -26,7 +26,7 @@ namespace ThePocket
         private void GenerateClasses()
         {
             var query = TypeCache
-                .GetTypesWithAttribute<GameChartAttribute>()
+                .GetTypesWithAttribute<ModelAttribute>()
                 .GroupBy(chart => chart.Namespace);
 
             foreach (IGrouping<string, Type> group in query)
@@ -37,8 +37,13 @@ namespace ThePocket
 
                 foreach (Type gameChart in group)
                 {
-                    GameChartAttribute attribute = gameChart.GetCustomAttribute<GameChartAttribute>();
+                    ModelAttribute attribute = gameChart.GetCustomAttribute<ModelAttribute>();
                     if (attribute == null)
+                    {
+                        continue;
+                    }
+
+                    if (attribute.Usage.HasFlag(ModelUsageTargets.GameChart) == false)
                     {
                         continue;
                     }
@@ -73,7 +78,7 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void GenerateClass(Type gameChart, GameChartAttribute attribute)
+        private void GenerateClass(Type gameChart, ModelAttribute attribute)
         {
             WriteLine($"public partial class {gameChart.Name} : IGameChartForAutoGeneration");
             WriteLine("{");
@@ -82,7 +87,7 @@ namespace ThePocket
                 CreateGetNameFunction(attribute);
                 WriteLine();
 
-                CreateToLocalFunction(gameChart);
+                CreateSaveToLocal(gameChart);
                 WriteLine();
 
                 CreateQueryFunction();
@@ -91,7 +96,7 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void CreateGetNameFunction(GameChartAttribute attribute)
+        private void CreateGetNameFunction(ModelAttribute attribute)
         {
             WriteLine($"public string GetName()");
             WriteLine("{");
@@ -103,28 +108,28 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void CreateToLocalFunction(Type gameData)
+        private void CreateSaveToLocal(Type gameData)
         {
-            WriteLine($"public void ToLocal(LitJson.JsonData gameChartJson)");
+            WriteLine($"public void SaveToLocal(LitJson.JsonData gameChartJson)");
             WriteLine("{");
             PushIndent();
             {
                 foreach (FieldInfo field in gameData.GetFields())
                 {
-                    GameChartColumnAttribute column = field.GetCustomAttribute<GameChartColumnAttribute>();
-                    if (column == null)
+                    FieldAttribute attr = field.GetCustomAttribute<FieldAttribute>();
+                    if (attr == null)
                     {
                         continue;
                     }
 
                     if (field.FieldType == typeof(string))
                     {
-                        WriteLine($"{field.Name} = gameChartJson[\"{column.Name}\"].ToString();");
+                        WriteLine($"{field.Name} = gameChartJson[\"{attr.Name}\"].ToString();");
                         continue;
                     }
 
                     Write($"{field.Name} = ");
-                    Write($"{field.FieldType.Name}.Parse(gameChartJson[\"{column.Name}\"].ToString());");
+                    Write($"{field.FieldType.Name}.Parse(gameChartJson[\"{attr.Name}\"].ToString());");
                     WriteLine();
                 }
             }

@@ -29,7 +29,7 @@ namespace ThePocket
         private void GenerateClasses()
         {
             var query = TypeCache
-                .GetTypesWithAttribute<GameDataAttribute>()
+                .GetTypesWithAttribute<ModelAttribute>()
                 .GroupBy(chart => chart.Namespace);
 
             foreach (IGrouping<string, Type> group in query)
@@ -40,8 +40,13 @@ namespace ThePocket
 
                 foreach (Type gameData in group)
                 {
-                    GameDataAttribute attribute = gameData.GetCustomAttribute<GameDataAttribute>();
+                    ModelAttribute attribute = gameData.GetCustomAttribute<ModelAttribute>();
                     if (attribute == null)
+                    {
+                        continue;
+                    }
+
+                    if (attribute.Usage.HasFlag(ModelUsageTargets.GameData) == false)
                     {
                         continue;
                     }
@@ -76,7 +81,7 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void GenerateClass(Type gameData, GameDataAttribute attribute)
+        private void GenerateClass(Type gameData, ModelAttribute attribute)
         {
             WriteLine($"public partial class {gameData.Name} : IGameDataForAutoGeneration");
             WriteLine("{");
@@ -97,7 +102,7 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void CreateGetNameFunction(GameDataAttribute attribute)
+        private void CreateGetNameFunction(ModelAttribute attribute)
         {
             WriteLine($"public string GetName()");
             WriteLine("{");
@@ -120,19 +125,19 @@ namespace ThePocket
                 {
                     foreach (FieldInfo field in gameData.GetFields())
                     {
-                        GameDataColumnAttribute column = field.GetCustomAttribute<GameDataColumnAttribute>();
-                        if (column == null)
+                        FieldAttribute attr = field.GetCustomAttribute<FieldAttribute>();
+                        if (attr == null)
                         {
                             continue;
                         }
 
                         if (field.FieldType == typeof(DateTime))
                         {
-                            WriteLine($"param.Add(\"{column.Name}\", string.Format(\"{{0:MM-DD:HH:mm:ss.fffZ}}\", {field.Name}.ToString(CultureInfo.InvariantCulture)));");
+                            WriteLine($"param.Add(\"{attr.Name}\", string.Format(\"{{0:MM-DD:HH:mm:ss.fffZ}}\", {field.Name}.ToString(CultureInfo.InvariantCulture)));");
                             continue;
                         }
 
-                        WriteLine($"param.Add(\"{column.Name}\", {field.Name});");
+                        WriteLine($"param.Add(\"{attr.Name}\", {field.Name});");
                     }
                 }
                 WriteLine();
@@ -150,21 +155,20 @@ namespace ThePocket
             {
                 foreach (FieldInfo field in gameData.GetFields())
                 {
-                    GameDataColumnAttribute column = field.GetCustomAttribute<GameDataColumnAttribute>();
-                    if (column == null)
+                    FieldAttribute attr = field.GetCustomAttribute<FieldAttribute>();
+                    if (attr == null)
                     {
                         continue;
                     }
 
-
                     if (field.FieldType == typeof(string))
                     {
-                        WriteLine($"{field.Name} = gameDataJson[\"{column.Name}\"].ToString();");
+                        WriteLine($"{field.Name} = gameDataJson[\"{attr.Name}\"].ToString();");
                         continue;
                     }
 
                     Write($"{field.Name} = ");
-                    Write($"{field.FieldType.Name}.Parse(gameDataJson[\"{column.Name}\"].ToString());");
+                    Write($"{field.FieldType.Name}.Parse(gameDataJson[\"{attr.Name}\"].ToString());");
                     WriteLine();
                 }
             }

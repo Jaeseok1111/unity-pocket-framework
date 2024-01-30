@@ -46,7 +46,7 @@ namespace ThePocket
 
                     LitJson.JsonData gameChartJson = callback.FlattenRows();
 
-                    _gameChart.ToLocal(gameChartJson);
+                    _gameChart.SaveToLocal(gameChartJson);
 
                     result.IsSuccess = true;
                 }
