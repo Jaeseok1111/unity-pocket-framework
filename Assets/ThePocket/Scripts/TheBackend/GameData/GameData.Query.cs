@@ -31,10 +31,8 @@ namespace ThePocket
 
                     if (callback.IsSuccess())
                     {
-                        // 불러온 데이터가 하나라도 존재할 경우
                         if (callback.FlattenRows().Count > 0)
                         {
-                            // 이후 업데이트에 사용될 각 데이터의 indate값 저장
                             _inDate = callback.FlattenRows()[0]["inDate"].ToString();
 
                             _gameData.ToLocal(callback.FlattenRows()[0]);

@@ -2,7 +2,7 @@ using ThePocket;
 
 namespace Sample
 {
-    [Model(Name = "items", Usage = ModelUsageTargets.GameChart | ModelUsageTargets.Database)]
+    [Model(Name = "items", Usage = ModelUsageTargets.GameChart)]
     public partial class ItemData
     {
         [Field(Name = "templateId", NotNull = true, PrimaryKey = true)]

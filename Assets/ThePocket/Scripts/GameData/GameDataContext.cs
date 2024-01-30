@@ -1,16 +1,23 @@
+using Sample;
 using ThePocket.Utils.SQLite;
 using UnityEngine;
 using Zenject;
 
 namespace ThePocket
 {
-    public partial class GameDataContext : DatabaseContext, IInitializable
+    public partial class GameDataContext : IInitializable
     {
+        private readonly DatabaseContext _database;
+
         [Inject]
         public GameDataContext()
-            : base("GameData")
         {
+            _database = new DatabaseContext("GameData");
+            
+            Construct();
         }
+
+        partial void Construct();
 
         public void Initialize()
         {

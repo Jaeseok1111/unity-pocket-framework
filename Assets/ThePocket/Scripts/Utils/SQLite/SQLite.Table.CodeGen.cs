@@ -1,26 +1,23 @@
 #if UNITY_EDITOR
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using UnityEngine;
 
 namespace ThePocket.Utils.SQLite
 {
-    public class SchemeCodeGenerator : CodeGenerator
+    public class TableCodeGen : CodeGenerator
     {
         public override string FolderPath => "Assets/ThePocket/Scripts/Utils/SQLite";
-        public override string Name => "SQLite.Scheme.Generated.cs";
+        public override string Name => "SQLite.Table.Generated.cs";
 
         protected override void Generate()
         {
+            WriteLine("using System;");
             WriteLine("using ThePocket;");
             WriteLine("using ThePocket.Utils;");
             WriteLine("using ThePocket.Utils.SQLite;");
-            WriteLine("using System;");
-            WriteLine("using System.Data;");
             WriteLine();
 
             GenerateClasses();
@@ -35,6 +32,7 @@ namespace ThePocket.Utils.SQLite
             foreach (IGrouping<string, Type> group in query)
             {
                 string namespaceName = group.Key;
+
                 GenerateNamespaceBegin(namespaceName);
                 {
                     foreach (Type table in group)
@@ -81,50 +79,33 @@ namespace ThePocket.Utils.SQLite
             WriteLine("{");
             PushIndent();
             {
-                GenerateDefinitionClass(table, attribute);
+                GenerateTableClass(table, attribute);
             }
             PopIndent();
             WriteLine("}");
         }
 
-        private void GenerateDefinitionClass(Type table, ModelAttribute attribute)
+        private void GenerateTableClass(Type table, ModelAttribute attribute)
         {
-            WriteLine($"public class Scheme : IScheme");
+            WriteLine($"public class Table : Table<{table.Name}>");
             WriteLine("{");
             PushIndent();
             {
-                WriteLine($"public string Name {{ get => \"{attribute.Name}\"; }}");
-                WriteLine($"public int Version {{ get => 0; }}");
-                WriteLine();
-
-                GenerateFieldsClass(table);
-            }
-            PopIndent();
-            WriteLine("}");
-        }
-
-        private void GenerateFieldsClass(Type table)
-        {
-            WriteLine($"public static class Fields");
-            WriteLine("{");
-            PushIndent();
-            {
-                foreach (FieldInfo field in table.GetFields())
+                // Constructor
+                WriteLine($"public Table(DatabaseContext context)");
+                PushIndent();
                 {
-                    FieldAttribute attribute = field.GetCustomAttribute<FieldAttribute>();
-                    if (attribute == null)
-                    {
-                        continue;
-                    }
-
-                    WriteLine($"public static FieldScheme {field.Name} {{ get; private set; }} = " +
-                        $"new FieldScheme(\"{attribute.Name}\", typeof({field.FieldType.Name}));");
+                    WriteLine($": base(context, \"{attribute.Name}\")");
                 }
+                PopIndent();
+                WriteLine("{");
+                WriteLine("}");
             }
             PopIndent();
             WriteLine("}");
         }
     }
 }
+
 
 #endif

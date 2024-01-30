@@ -2,12 +2,10 @@ using System;
 
 namespace ThePocket
 {
-    [Flags]
     public enum ModelUsageTargets
     {
         GameChart,
         GameData,
-        Database,
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

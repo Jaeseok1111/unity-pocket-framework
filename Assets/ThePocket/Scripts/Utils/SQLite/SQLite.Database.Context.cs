@@ -71,7 +71,7 @@ namespace ThePocket.Utils.SQLite
             return result;
         }
 
-        private void ExecuteCommand(string query, System.Action<IDbCommand> executeCommand)
+        private void ExecuteCommand(string query, Action<IDbCommand> executeCommand)
         {
             try
             {

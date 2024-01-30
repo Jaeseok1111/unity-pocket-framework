@@ -9,18 +9,19 @@ using UnityEngine;
 
 namespace ThePocket.Utils.SQLite
 {
-    public class SchemeCodeGenerator : CodeGenerator
+    public class RecordCodeGen : CodeGenerator
     {
         public override string FolderPath => "Assets/ThePocket/Scripts/Utils/SQLite";
-        public override string Name => "SQLite.Scheme.Generated.cs";
+
+        public override string Name => "SQLite.Record.Generated.cs";
 
         protected override void Generate()
         {
+            WriteLine("using System;");
+            WriteLine("using System.Data;");
             WriteLine("using ThePocket;");
             WriteLine("using ThePocket.Utils;");
             WriteLine("using ThePocket.Utils.SQLite;");
-            WriteLine("using System;");
-            WriteLine("using System.Data;");
             WriteLine();
 
             GenerateClasses();
@@ -35,6 +36,7 @@ namespace ThePocket.Utils.SQLite
             foreach (IGrouping<string, Type> group in query)
             {
                 string namespaceName = group.Key;
+
                 GenerateNamespaceBegin(namespaceName);
                 {
                     foreach (Type table in group)
@@ -77,38 +79,40 @@ namespace ThePocket.Utils.SQLite
 
         private void GenerateClass(Type table, ModelAttribute attribute)
         {
-            WriteLine($"public partial class {table.Name}");
+            WriteLine($"public partial class {table.Name} : IRecord");
             WriteLine("{");
             PushIndent();
             {
-                GenerateDefinitionClass(table, attribute);
+                GenerateFetch(table);
             }
             PopIndent();
             WriteLine("}");
         }
 
-        private void GenerateDefinitionClass(Type table, ModelAttribute attribute)
+        static Dictionary<Type, string> GetFieldSwitch = new()
         {
-            WriteLine($"public class Scheme : IScheme");
+            { typeof(Byte), "GetByte" },
+            { typeof(Char), "GetChar" },
+            { typeof(String), "GetString" },
+            { typeof(Boolean), "GetBoolean" },
+            { typeof(Int16), "GetInt16" },
+            { typeof(Int32), "GetInt32" },
+            { typeof(Int64), "GetInt64" },
+            { typeof(float), "GetFloat" },
+            { typeof(double), "GetDouble" },
+            { typeof(DateTime), "GetDateTime" },
+            { typeof(Guid), "GetGuid" },
+        };
+
+        private void GenerateFetch(Type table)
+        {
+
+            WriteLine($"public void Fetch(IDataReader reader)");
             WriteLine("{");
             PushIndent();
             {
-                WriteLine($"public string Name {{ get => \"{attribute.Name}\"; }}");
-                WriteLine($"public int Version {{ get => 0; }}");
-                WriteLine();
+                int fieldIndex = 0;
 
-                GenerateFieldsClass(table);
-            }
-            PopIndent();
-            WriteLine("}");
-        }
-
-        private void GenerateFieldsClass(Type table)
-        {
-            WriteLine($"public static class Fields");
-            WriteLine("{");
-            PushIndent();
-            {
                 foreach (FieldInfo field in table.GetFields())
                 {
                     FieldAttribute attribute = field.GetCustomAttribute<FieldAttribute>();
@@ -117,8 +121,18 @@ namespace ThePocket.Utils.SQLite
                         continue;
                     }
 
-                    WriteLine($"public static FieldScheme {field.Name} {{ get; private set; }} = " +
-                        $"new FieldScheme(\"{attribute.Name}\", typeof({field.FieldType.Name}));");
+                    if (GetFieldSwitch.ContainsKey(field.FieldType) == false)
+                    {
+                        Debug.LogError($"Not Found GetField in IDataReader. " +
+                            $"[" +
+                            $"Name: {table.Name}, Field Name: {field.Name}, Field Type: {field.FieldType}" +
+                            $"]");
+                        continue;
+                    }
+
+                    WriteLine($"{field.Name} = reader.{GetFieldSwitch[field.FieldType]}({fieldIndex});");
+
+                    ++fieldIndex;
                 }
             }
             PopIndent();

@@ -43,7 +43,7 @@ namespace ThePocket
                         continue;
                     }
 
-                    if (attribute.Usage.HasFlag(ModelUsageTargets.GameChart) == false)
+                    if (attribute.Usage == ModelUsageTargets.GameChart)
                     {
                         continue;
                     }

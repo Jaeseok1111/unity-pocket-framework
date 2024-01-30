@@ -2,10 +2,10 @@ using System;
 
 namespace ThePocket.Utils.SQLite
 {
-    public abstract class TableScheme
+    public interface IScheme
     {
-        public abstract string Name { get; protected set; }
-        public abstract int Version { get; protected set; }
+        public string Name { get; }
+        public int Version { get; }
     }
 
     public class FieldScheme

@@ -46,7 +46,7 @@ namespace ThePocket
                         continue;
                     }
 
-                    if (attribute.Usage.HasFlag(ModelUsageTargets.GameData) == false)
+                    if (attribute.Usage == ModelUsageTargets.GameData)
                     {
                         continue;
                     }
