@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ThridParty;
 using UnityEditor;
@@ -20,16 +22,52 @@ public class GameChartCodeGen : CodeGenerator
 
     private void GenerateClasses()
     {
-        foreach (Type gameChart in TypeCache.GetTypesWithAttribute<GameChartAttribute>())
+        var query = TypeCache
+            .GetTypesWithAttribute<GameChartAttribute>()
+            .GroupBy(chart => chart.Namespace);
+
+        foreach (IGrouping<string, Type> group in query)
         {
-            GameChartAttribute attribute = gameChart.GetCustomAttribute<GameChartAttribute>();
-            if (attribute == null)
+            string namespaceName = group.Key;
+
+            GenerateNamespaceBegin(namespaceName);
+
+            foreach (Type gameChart in group)
             {
-                continue;
+                GameChartAttribute attribute = gameChart.GetCustomAttribute<GameChartAttribute>();
+                if (attribute == null)
+                {
+                    continue;
+                }
+
+                GenerateClass(gameChart, attribute);
             }
 
-            GenerateClass(gameChart, attribute);
+            GenerateNamespaceEnd(namespaceName);
         }
+    }
+
+    private void GenerateNamespaceBegin(string namespaceName)
+    {
+        if (string.IsNullOrEmpty(namespaceName))
+        {
+            return;
+        }
+
+        WriteLine($"namespace {namespaceName}");
+        WriteLine("{");
+        PushIndent();
+    }
+
+    private void GenerateNamespaceEnd(string namespaceName)
+    {
+        if (string.IsNullOrEmpty(namespaceName))
+        {
+            return;
+        }
+
+        PopIndent();
+        WriteLine("}");
     }
 
     private void GenerateClass(Type gameChart, GameChartAttribute attribute)
