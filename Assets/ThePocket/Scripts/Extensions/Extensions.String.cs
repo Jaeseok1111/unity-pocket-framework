@@ -6,6 +6,11 @@ namespace ThePocket
 {
     public static class StringExtension
     {
+        public static string[] ToOnlyWords(this string str)
+        {
+            return Regex.Replace(str, "\\W", " ").Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public static string ToCamelCase(this string str)
         {
             var x = str.Replace("_", "");

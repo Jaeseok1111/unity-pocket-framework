@@ -87,18 +87,18 @@ namespace ThePocket.Utils.SQLite
 
         private void GenerateTableClass(Type table, ModelAttribute attribute)
         {
-            WriteLine($"public class Table : Table<{table.Name}>");
+            WriteLine($"public class Table : ThePocket.Utils.SQLite.Table");
             WriteLine("{");
             PushIndent();
             {
-                // Constructor
-                WriteLine($"public Table(DatabaseContext context)");
+                // NewQuery
+                WriteLine($"public Query<{table.Name}> NewQuery()");
+                WriteLine("{");
                 PushIndent();
                 {
-                    WriteLine($": base(context, \"{attribute.Name}\")");
+                    WriteLine($"return NewQuery<{table.Name}>(\"{attribute.Name}\");");
                 }
                 PopIndent();
-                WriteLine("{");
                 WriteLine("}");
             }
             PopIndent();

@@ -19,9 +19,8 @@ namespace ThePocket
     public class FieldAttribute : Attribute
     {
         public string Name { get; set; }
-        public string Type { get; set; }
-        public object DefaultValue { get; set; }
-        public bool PrimaryKey { get; set; }
         public bool NotNull { get; set; }
+        public bool Unique { get; set; }
+        public bool PrimaryKey { get; set; }
     }
 }

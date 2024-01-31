@@ -1,3 +1,4 @@
+using System;
 using ThePocket;
 
 namespace Sample
@@ -10,5 +11,8 @@ namespace Sample
 
         [Field(Name = "name", NotNull = true)]
         public string Name;
+
+        [Field(Name = "created", NotNull = true)]
+        public DateTime Created = DateTime.Now;
     }
 }

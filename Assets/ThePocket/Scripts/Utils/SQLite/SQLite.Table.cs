@@ -1,21 +1,19 @@
-using System;
-
 namespace ThePocket.Utils.SQLite
 {
-    public abstract class Table<T> where T : IRecord, new()
+    public abstract class Table
     {
-        private readonly DatabaseContext _context;
-        private readonly string _name;
-
-        public Table(DatabaseContext context, string name)
+        private DatabaseContext _context;
+        
+        public static T Create<T>(DatabaseContext context) where T : Table, new()
         {
-            _context = context;
-            _name = name;
+            T newTable = new T();
+            newTable._context = context;
+            return newTable;
         }
 
-        public Query<T> NewQuery()
+        protected Query<T> NewQuery<T>(string tableName) where T : IRecord, new()
         {
-            return new Query<T>(_context, _name);
+            return new Query<T>(_context, tableName);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Sample;
 using ThePocket;
 
 public class SampleSceneInstaller : SceneInstaller<SampleSceneInitializer>
@@ -6,8 +7,9 @@ public class SampleSceneInstaller : SceneInstaller<SampleSceneInitializer>
     {
         base.InstallBindings();
 
-        Container
-            .BindInterfacesAndSelfTo<GameDataContext>()
-            .AsSingle();
+        GameDataInstaller.Install(Container, (context) =>
+        {
+            context.AddTable<ItemData, ItemData.Table, ItemData.Scheme>();
+        });
     }
 }

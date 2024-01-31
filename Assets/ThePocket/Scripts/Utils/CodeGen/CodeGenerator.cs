@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ThePocket.Utils
 {
@@ -9,15 +7,12 @@ namespace ThePocket.Utils
         public abstract string FolderPath { get; }
         public abstract string Name { get; }
 
-        private int _currentIndent;
-        private List<string> _lines = new();
-
-        private string _temporaryString;
+        private CodeBuilder _builder = new();
 
         public void Override(CodeGeneratorContext context)
         {
             context.OverrideFileName(Name);
-            context.OverrideFolderPath(FolderPath);
+            context.OverrideFolderPath("Assets/ThePocket/Scripts/Generated");
         }
 
         public void GenerateCode(CodeGeneratorContext context)
@@ -31,11 +26,6 @@ namespace ThePocket.Utils
 
         protected void Flush(CodeGeneratorContext context)
         {
-            if (_temporaryString != null)
-            {
-                PushTemporaryString();
-            }
-
             string header =
                 $"/// This file is auto-generated file with project,{Environment.NewLine}" +
                 $"/// with {GetType().FullName} class.{Environment.NewLine}" +
@@ -43,7 +33,7 @@ namespace ThePocket.Utils
                 $"/// @Jaeseok{Environment.NewLine}" +
                 $"{Environment.NewLine}";
 
-            string code = string.Join(Environment.NewLine, _lines.Select(x => x.TrimEnd()));
+            string code = _builder.ToString();
 
             context.OverrideCode(
                 $"{header}" +
@@ -55,50 +45,27 @@ namespace ThePocket.Utils
         #region Write/Indent
         protected void Write(string code)
         {
-            _temporaryString = _temporaryString + code ?? code;
+            _builder.Write(code);
         }
 
         protected void WriteLine()
         {
-            WriteLine(string.Empty);
+            _builder.WriteLine();
         }
 
         protected void WriteLine(string code)
         {
-            Write(code);
-            PushTemporaryString();
+            _builder.WriteLine(code);
         }
 
         protected void PushIndent()
         {
-            if (_temporaryString != null)
-            {
-                throw new InvalidOperationException("Unable to indent while line is not empty.");
-            }
-
-            _currentIndent++;
+            _builder.PushIndent();
         }
 
         protected void PopIndent()
         {
-            _currentIndent--;
-            if (_currentIndent < 0)
-            {
-                throw new InvalidOperationException("Unable to unindent!");
-            }
-        }
-
-        private void PushTemporaryString()
-        {
-            if (_temporaryString == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            string indentString = new(' ', 4 * _currentIndent);
-
-            _lines.Add(indentString + _temporaryString);
-            _temporaryString = null;
+            _builder.PopIndent();
         }
         #endregion
     }

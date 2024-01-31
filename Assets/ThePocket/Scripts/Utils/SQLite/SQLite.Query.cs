@@ -36,7 +36,7 @@ namespace ThePocket.Utils.SQLite
             return newQuery;
         }
 
-        public Query<T> Where(FieldScheme field, object value)
+        public Query<T> Where(Scheme.Field field, object value)
         {
             string newCondition = $"({field.Name} = {value})";
 
@@ -111,7 +111,7 @@ namespace ThePocket.Utils.SQLite
             return _context.ExecuteQuery<T>(query.ToString());
         }
 
-        public void Update(IDictionary<FieldScheme, object> fields)
+        public void Update(IDictionary<Scheme.Field, object> fields)
         {
             if (_context == null)
             {

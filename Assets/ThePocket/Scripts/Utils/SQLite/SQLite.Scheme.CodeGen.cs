@@ -1,11 +1,10 @@
 #if UNITY_EDITOR
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using UnityEngine;
+using static UnityEngine.CompositeCollider2D;
 
 namespace ThePocket.Utils.SQLite
 {
@@ -75,40 +74,40 @@ namespace ThePocket.Utils.SQLite
             WriteLine("}");
         }
 
-        private void GenerateClass(Type table, ModelAttribute attribute)
+        private void GenerateClass(Type table, ModelAttribute tableAttribute)
         {
             WriteLine($"public partial class {table.Name}");
             WriteLine("{");
             PushIndent();
             {
-                GenerateDefinitionClass(table, attribute);
+                GenerateDefinitionClass(table, tableAttribute);
             }
             PopIndent();
             WriteLine("}");
         }
 
-        private void GenerateDefinitionClass(Type table, ModelAttribute attribute)
+        private void GenerateDefinitionClass(Type table, ModelAttribute tableAttribute)
         {
-            WriteLine($"public class Scheme : IScheme");
+            WriteLine($"public class Scheme : ThePocket.Utils.SQLite.Scheme");
             WriteLine("{");
             PushIndent();
             {
-                WriteLine($"public string Name {{ get => \"{attribute.Name}\"; }}");
-                WriteLine($"public int Version {{ get => 0; }}");
+                GenerateConstructor(table, tableAttribute);
                 WriteLine();
-
                 GenerateFieldsClass(table);
             }
             PopIndent();
             WriteLine("}");
         }
 
-        private void GenerateFieldsClass(Type table)
+        private void GenerateConstructor(Type table, ModelAttribute tableAttribute)
         {
-            WriteLine($"public static class Fields");
+            WriteLine("public Scheme()");
             WriteLine("{");
             PushIndent();
             {
+                WriteLine($"TableName = \"{tableAttribute.Name}\";");
+
                 foreach (FieldInfo field in table.GetFields())
                 {
                     FieldAttribute attribute = field.GetCustomAttribute<FieldAttribute>();
@@ -117,12 +116,70 @@ namespace ThePocket.Utils.SQLite
                         continue;
                     }
 
-                    WriteLine($"public static FieldScheme {field.Name} {{ get; private set; }} = " +
-                        $"new FieldScheme(\"{attribute.Name}\", typeof({field.FieldType.Name}));");
+                    WriteLine($"AddField({field.Name});");
                 }
             }
             PopIndent();
             WriteLine("}");
+        }
+
+        private void GenerateFieldsClass(Type table)
+        {
+            foreach (FieldInfo field in table.GetFields())
+            {
+                FieldAttribute attribute = field.GetCustomAttribute<FieldAttribute>();
+                if (attribute == null)
+                {
+                    continue;
+                }
+
+                Scheme.FieldType? fieldType = field.FieldType.ToString() switch
+                {
+                    "System.Boolean" => Scheme.FieldType.TEXT,
+                    "System.Int16" => Scheme.FieldType.INTEGER,
+                    "System.Int32" => Scheme.FieldType.INTEGER,
+                    "System.Int64" => Scheme.FieldType.INTEGER,
+                    "float" => Scheme.FieldType.REAL,
+                    "double" => Scheme.FieldType.REAL,
+                    "System.Decimal" => Scheme.FieldType.REAL,
+                    "System.String" => Scheme.FieldType.TEXT,
+                    "System.Enum" => Scheme.FieldType.TEXT,
+                    "System.DateTime" => Scheme.FieldType.TEXT,
+                    _ => null,
+                };
+
+                if (fieldType == null)
+                {
+                    continue;
+                }
+
+                WriteLine($"public static Scheme.Field {field.Name}");
+                WriteLine("{");
+                PushIndent();
+                {
+                    WriteLine("get");
+                    WriteLine("{");
+                    PushIndent();
+                    {
+                        WriteLine($"return new Scheme.Field()");
+                        WriteLine("{");
+                        PushIndent();
+                        {
+                            WriteLine($"Name = \"{attribute.Name}\",");
+                            WriteLine($"Type = Scheme.FieldType.{fieldType},");
+                            WriteLine($"NotNull = {(attribute.NotNull ? "true" : "false")},");
+                            WriteLine($"Unique = {(attribute.Unique ? "true" : "false")},");
+                            WriteLine($"PrimaryKey = {(attribute.PrimaryKey ? "true" : "false")},");
+                        }
+                        PopIndent();
+                        WriteLine("};");
+                    }
+                    PopIndent();
+                    WriteLine("}");
+                }
+                PopIndent();
+                WriteLine("}");
+            }
         }
     }
 }
