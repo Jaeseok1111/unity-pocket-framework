@@ -30,6 +30,7 @@ namespace ThePocket
         {
             var query = TypeCache
                 .GetTypesWithAttribute<ModelAttribute>()
+                .Where(type => type.GetCustomAttribute<ModelAttribute>()?.Usage == ModelUsageTargets.GameData)
                 .GroupBy(chart => chart.Namespace);
 
             foreach (IGrouping<string, Type> group in query)
@@ -40,18 +41,7 @@ namespace ThePocket
 
                 foreach (Type gameData in group)
                 {
-                    ModelAttribute attribute = gameData.GetCustomAttribute<ModelAttribute>();
-                    if (attribute == null)
-                    {
-                        continue;
-                    }
-
-                    if (attribute.Usage == ModelUsageTargets.GameData)
-                    {
-                        continue;
-                    }
-
-                    GenerateClass(gameData, attribute);
+                    GenerateClass(gameData);
                 }
 
                 GenerateNamespaceEnd(namespaceName);
@@ -81,12 +71,14 @@ namespace ThePocket
             WriteLine("}");
         }
 
-        private void GenerateClass(Type gameData, ModelAttribute attribute)
+        private void GenerateClass(Type gameData)
         {
             WriteLine($"public partial class {gameData.Name} : IGameDataForAutoGeneration");
             WriteLine("{");
             PushIndent();
             {
+                ModelAttribute attribute = gameData.GetCustomAttribute<ModelAttribute>();
+
                 CreateGetNameFunction(attribute);
                 WriteLine();
 
